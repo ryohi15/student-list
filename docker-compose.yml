@@ -1,0 +1,43 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    container_name: "Portfolio_DB"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    restart: always
+    networks:
+      default:
+  rails:
+    build: .
+    container_name: "Portfolio_Backend"
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3010 -b '0.0.0.0'"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+    ports:
+      - "3010:3010"
+    restart: always
+    tty: true
+    stdin_open: true
+    depends_on:
+      - db
+    # next と連携する場合は、直下と最下部の最上位 networks キーのコメントアウトを外す
+    # networks:
+    #   # Dockerネットワークのサブネットに属する任意のIPを指定
+    #   external-network:
+    #     ipv4_address: 192.168.192.3
+    #   default:
+volumes:
+  postgres_volume:
+  bundle:
+# networks:
+#   external-network:
+#     external: true
+#   default:
